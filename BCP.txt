@@ -1,0 +1,70 @@
+package BCP;
+
+
+	import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+	import com.google.gson.JsonParser;
+
+import io.github.bonigarcia.wdm.WebDriverManager;
+
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.openqa.selenium.By;
+	//import org.openqa.selenium.WebDriver;
+	import org.openqa.selenium.WebElement;
+	import org.openqa.selenium.chrome.ChromeDriver;
+
+	public class ReqresApiAutomation {
+
+	  
+
+		@BeforeAll
+		
+		  public static void main(String[] args) {
+		//static void configuracionInicial() {
+			WebDriverManager.chromedriver().setup();
+		}
+
+		@BeforeEach
+		void instanciarDriver() {
+			ChromeDriver driver = new ChromeDriver();
+		
+
+	        try {
+	          
+	            String apiUrl = "https://reqres.in/api/users?page=2";
+
+	            
+	            driver.get(apiUrl);
+
+	           
+	            WebElement preElement = driver.findElement(By.tagName("pre"));
+	            String jsonResponse = preElement.getText();
+
+	            
+	            JsonObject jsonObject = JsonParser.parseString(jsonResponse).getAsJsonObject();
+
+	            
+	            if (jsonObject.has("data")) {
+	                JsonArray users = JsonParser.parseString(jsonObject.get("data").toString())
+	                        .getAsJsonArray().getAsJsonArray();
+	                for (JsonElement user : users) {
+	                    if (!((JsonObject) user).has("id") || !((JsonObject) user).has("email") || !((JsonObject) user).has("first_name") || !((JsonObject) user).has("last_name")) {
+	                        System.out.println("Error: Los usuarios no tienen la estructura esperada.");
+	                        return;
+	                    }
+	                }
+	                System.out.println("Validación exitosa. Todos los usuarios tienen los campos esperados.");
+	            } else {
+	                System.out.println("Error: No se encontró la clave 'data' en la respuesta.");
+	            }
+
+	        } catch (Exception e) {
+	            e.printStackTrace();
+	        } finally {
+	            
+	            driver.quit();
+	        }
+	    }
+	}
